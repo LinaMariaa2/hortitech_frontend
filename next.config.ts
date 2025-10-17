@@ -11,16 +11,24 @@ const nextConfig = {
       },
     ],
   },
-  // ... resto de tu configuración
+
+  // ✅ Mantienes lo que ya tenías y agregas esto:
+  reactStrictMode: true,
+
+  // ✅ Esto evita el error del build que viste en Railway
   experimental: {
-    serverActions: {}, // CAMBIO: de 'true' a un objeto vacío para cumplir con la API de Next.js
+    serverActions: {}, // CAMBIO: de 'true' a un objeto vacío para cumplir con la API de Next.js 15
   },
+
   eslint: {
     ignoreDuringBuilds: true,
   },
+
   typescript: {
     ignoreBuildErrors: true,
   },
+
+  // ✅ Esto es necesario para que Railway pueda ejecutar el build correctamente
   output: "standalone",
 };
 
