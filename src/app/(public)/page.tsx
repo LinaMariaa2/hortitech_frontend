@@ -22,32 +22,48 @@ interface TechStackItemProps {
 }
 
 // --- Componentes Reutilizables ---
-const Header = (): JSX.Element => (
-  <header className="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800">
-    <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-      <Link
-        href="/"
-        className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white"
-      >
-        <Leaf className="w-7 h-7 text-teal-600 dark:text-teal-500" />
-        <span>Hortitech</span>
-      </Link>
-      <div className="flex items-center gap-6 text-slate-700 dark:text-slate-300 font-medium">
-        <a href="#features" className="hover:text-teal-600 dark:hover:text-teal-400">Características</a>
-        <a href="#benefits" className="hover:text-teal-600 dark:hover:text-teal-400">Beneficios</a>
-        <a href="#tech" className="hover:text-teal-600 dark:hover:text-teal-400">Tecnología</a>
-        <a href="#about" className="hover:text-teal-600 dark:hover:text-teal-400">Sobre Nosotros</a>
-        <a href="#contact" className="hover:text-teal-600 dark:hover:text-teal-400">Contacto</a>
-        <Link
-          href="/login"
-          className="bg-teal-600 text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors"
-        >
-          Iniciar Sesión
+const Header = (): JSX.Element => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <header className="bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800">
+      <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold text-slate-900 dark:text-white">
+          <Leaf className="w-7 h-7 text-teal-600 dark:text-teal-500" />
+          <span>Hortitech</span>
         </Link>
-      </div>
-    </nav>
-  </header>
-);
+
+        {/* Botón menú móvil */}
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="md:hidden text-slate-700 dark:text-slate-300"
+        >
+          <SlidersHorizontal className="w-6 h-6" />
+        </button>
+
+        {/* Menú principal */}
+        <div
+          className={`flex-col md:flex-row md:flex md:items-center gap-6 text-slate-700 dark:text-slate-300 font-medium 
+          ${isOpen ? "flex mt-4 bg-slate-100 dark:bg-slate-800 p-4 rounded-xl" : "hidden md:flex"}`}
+        >
+          <a href="#features" className="hover:text-teal-600 dark:hover:text-teal-400">Características</a>
+          <a href="#benefits" className="hover:text-teal-600 dark:hover:text-teal-400">Beneficios</a>
+          <a href="#tech" className="hover:text-teal-600 dark:hover:text-teal-400">Tecnología</a>
+          <a href="#about" className="hover:text-teal-600 dark:hover:text-teal-400">Sobre Nosotros</a>
+          <a href="#contact" className="hover:text-teal-600 dark:hover:text-teal-400">Contacto</a>
+          <Link
+            href="/login"
+            className="bg-teal-600 text-white text-sm font-bold py-2 px-4 rounded-lg hover:bg-teal-700 transition-colors"
+          >
+            Iniciar Sesión
+          </Link>
+        </div>
+      </nav>
+    </header>
+  );
+};
+
 
 const FeatureCard = ({ image, title, description }: FeatureCardProps) => (
   <motion.div

@@ -3,7 +3,7 @@ import ProgramacionRiego from './programacion-content'
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Cargando zonas...</div>}>
+    <Suspense fallback={<div>Cargando Porgramaciones...</div>}>
       <ProgramacionRiego />
     </Suspense>
   )

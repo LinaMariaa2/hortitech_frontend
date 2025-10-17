@@ -3,7 +3,7 @@ import ProgramacionIluminacion from './programacion-content'
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Cargando zonas...</div>}>
+    <Suspense fallback={<div>Cargando Programaciones...</div>}>
       <ProgramacionIluminacion />
     </Suspense>
   )
