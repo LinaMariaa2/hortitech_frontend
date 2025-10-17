@@ -291,15 +291,43 @@ export default function ZonasPage() {
     });
   };
 
-  const StatusBadge = ({ estado }: { estado: string }) => {
-    const config = {
-      activo: { text: "Activo", color: "bg-green-100 text-green-800", icon: <CheckCircle2 className="w-3 h-3" /> },
-      inactivo: { text: "Inactivo", color: "bg-slate-100 text-slate-600", icon: <XCircle className="w-3 h-3" /> },
-      mantenimiento: { text: "Mantenimiento", color: "bg-amber-100 text-amber-800", icon: <Wrench className="w-3 h-3" /> },
-    };
-    const current = config[estado] || config.inactivo;
-    return <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${current.color}`}>{current.icon}{current.text}</span>;
+  // --- Componente corregido ---
+type EstadoZona = "activo" | "inactivo" | "mantenimiento";
+
+const StatusBadge = ({ estado }: { estado: EstadoZona }) => {
+  const config: Record<
+  EstadoZona,
+  { text: string; color: string; icon: React.ReactNode }
+> = {
+    activo: {
+      text: "Activo",
+      color: "bg-green-100 text-green-800",
+      icon: <CheckCircle2 className="w-3 h-3" />,
+    },
+    inactivo: {
+      text: "Inactivo",
+      color: "bg-slate-100 text-slate-600",
+      icon: <XCircle className="w-3 h-3" />,
+    },
+    mantenimiento: {
+      text: "Mantenimiento",
+      color: "bg-amber-100 text-amber-800",
+      icon: <Wrench className="w-3 h-3" />,
+    },
   };
+
+  const current = config[estado] ?? config.inactivo;
+
+  return (
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${current.color}`}
+    >
+      {current.icon}
+      {current.text}
+    </span>
+  );
+};
+
 
   return (
     <main className="w-full bg-slate-50 min-h-screen p-6 sm:p-8">
