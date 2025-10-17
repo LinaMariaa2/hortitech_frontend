@@ -1,4 +1,3 @@
-// app/(private)/home/admin/invernaderos/zonas/page.tsx
 import { Suspense } from 'react'
 import ZonasOperarioPage from './zonas-content'
 
