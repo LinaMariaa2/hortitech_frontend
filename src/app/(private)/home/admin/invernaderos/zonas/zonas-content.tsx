@@ -377,8 +377,8 @@ const StatusBadge = ({ estado }: { estado: EstadoZona }) => {
                  <ZonaChart lecturas={lecturas[zona.id_zona] || []} /> {/* --- NUEVO: lecturas por zona */}
               </div>
               <div className="mt-auto border-t border-slate-200 bg-slate-50 p-3 grid grid-cols-2 gap-3">
-                                  <Link href={`/home/operario/invernaderos/zonas/programacion-riego?id=${zona.id_zona}`} className="text-sm text-center font-semibold bg-blue-100 text-blue-800 px-3 py-2 rounded-md hover:bg-blue-200 flex items-center justify-center gap-1.5"><Droplets className="w-4 h-4"/> Riego</Link>
-                                  <Link href={`/home/operario/invernaderos/zonas/programacion-iluminacion?id=${zona.id_zona}`} className="text-sm text-center font-semibold bg-amber-100 text-amber-800 px-3 py-2 rounded-md hover:bg-amber-200 flex items-center justify-center gap-1.5"><Sun className="w-4 h-4"/> Iluminación</Link>
+                                  <Link href={`/home/admin/invernaderos/zonas/programacion-riego?id=${zona.id_zona}`} className="text-sm text-center font-semibold bg-blue-100 text-blue-800 px-3 py-2 rounded-md hover:bg-blue-200 flex items-center justify-center gap-1.5"><Droplets className="w-4 h-4"/> Riego</Link>
+                                  <Link href={`/home/admin/invernaderos/zonas/programacion-iluminacion?id=${zona.id_zona}`} className="text-sm text-center font-semibold bg-amber-100 text-amber-800 px-3 py-2 rounded-md hover:bg-amber-200 flex items-center justify-center gap-1.5"><Sun className="w-4 h-4"/> Iluminación</Link>
                               </div>
                 </div>
           ))}

@@ -32,17 +32,34 @@ interface Publicacion {
   autor?: Autor;
 }
 
+interface MessageModalProps {
+  title: string;
+  message: string;
+  onCerrar: () => void;
+  success?: boolean;
+}
+
 // --- Componente de Modal de Mensaje ---
-const MessageModal = ({ title, message, onCerrar, success = true }) => (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
-            {success ? <CheckCircle2 className="w-16 h-16 mx-auto text-teal-500 mb-4" /> : <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />}
-            <h3 className="text-xl font-bold text-slate-800 mb-4">{title}</h3>
-            <p className="text-slate-500 mb-8">{message}</p>
-            <button onClick={onCerrar} className="w-full px-6 py-2 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors">Entendido</button>
-        </div>
+const MessageModal: React.FC<MessageModalProps> = ({ title, message, onCerrar, success = true }) => (
+  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center">
+      {success ? (
+        <CheckCircle2 className="w-16 h-16 mx-auto text-teal-500 mb-4" />
+      ) : (
+        <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+      )}
+      <h3 className="text-xl font-bold text-slate-800 mb-4">{title}</h3>
+      <p className="text-slate-500 mb-8">{message}</p>
+      <button
+        onClick={onCerrar}
+        className="w-full px-6 py-2 rounded-lg bg-teal-600 text-white font-semibold hover:bg-teal-700 transition-colors"
+      >
+        Entendido
+      </button>
     </div>
+  </div>
 );
+
 
 // --- Componente Principal ---
 export default function ArchivadasPage() {
