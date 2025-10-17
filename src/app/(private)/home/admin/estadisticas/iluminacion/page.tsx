@@ -190,7 +190,7 @@ export default function EstadisticasIluminacion() {
     const fetchCounts = async () => {
       try {
         const invernaderosRes = await fetch(
-          `${BACKEND_URL}/api/invernadero/datos-activos`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/invernadero/datos-activos`
         );
         if (invernaderosRes.ok) {
           const invernaderos = await invernaderosRes.json();
@@ -198,7 +198,7 @@ export default function EstadisticasIluminacion() {
         }
 
         const zonasRes = await fetch(
-          `${BACKEND_URL}/api/zona/datos-activos`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/zona/datos-activos`
         );
         if (zonasRes.ok) {
           const zonas = await zonasRes.json();
@@ -211,7 +211,7 @@ export default function EstadisticasIluminacion() {
 
     const fetchEstadisticasZonas = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/zona/estadisticas`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zona/estadisticas`);
         if (res.ok) {
           const stats: EstadisticasZonas = await res.json();
           const formattedData = [
@@ -228,7 +228,7 @@ export default function EstadisticasIluminacion() {
 
     const fetchHistorialIluminacion = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/historialIluminacion/`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/historialIluminacion/`);
         if (res.ok) {
           const data = await res.json();
           setHistorialIluminacion(data);
@@ -287,7 +287,7 @@ useEffect(() => {
     setModalDataType("invernaderos");
     setShowModal(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/invernadero/datos-activos`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invernadero/datos-activos`);
       if (!res.ok) {
         throw new Error("Error al obtener los invernaderos activos");
       }
@@ -307,7 +307,7 @@ useEffect(() => {
     setModalDataType("zonas");
     setShowModal(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/zona/datos-activos`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zona/datos-activos`);
       if (!res.ok) {
         throw new Error("Error al obtener las zonas activas");
       }

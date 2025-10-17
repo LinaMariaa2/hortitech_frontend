@@ -68,7 +68,7 @@ export default function ArchivadasPage() {
     const fetchArchivadas = async () => {
         setCargando(true);
         try {
-            const res = await axios.get("http://localhost:4000/api/bitacora?archivadas=true");
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora?archivadas=true`);
             setPublicaciones(res.data);
         } catch (err) {
             console.error("Error al obtener archivadas", err);
@@ -83,7 +83,7 @@ export default function ArchivadasPage() {
   // CAMBIO: Función para desarchivar robustecida, elimina el alert()
   const desarchivar = async (id: number) => {
     try {
-      await axios.patch(`http://localhost:4000/api/bitacora/${id}/desarchivar`);
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora/${id}/desarchivar`);
       // Optimización: en lugar de volver a pedir los datos, filtramos el estado localmente
       setPublicaciones((prev) => prev.filter((p) => p.id_publicacion !== id));
       setModalMensaje("Publicación restaurada a la bitácora principal.");

@@ -207,7 +207,7 @@ export default function HomePage(): JSX.Element {
     const data = Object.fromEntries(formData.entries());
 
     try {
-      const res = await fetch("https://backendhortitech.onrender.com/api/visita/crear", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/visita/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

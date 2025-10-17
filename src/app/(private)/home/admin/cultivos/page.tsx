@@ -184,7 +184,7 @@ const guardarProduccion = async () => {
 
   try {
     // 🔄 Actualizar en el backend
-    await axios.patch(`http://localhost:4000/api/cultivos/${cultivoSeleccionado}`, {
+    await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/cultivos/${cultivoSeleccionado}`, {
       cantidad_cosechada: Number(form2.cantidad_cosechada),
       cantidad_disponible: Number(form2.cantidad_disponible),
       cantidad_reservada: Number(form2.cantidad_reservada),
@@ -253,7 +253,7 @@ useEffect(() => {
   const debounce = setTimeout(async () => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/persona?filtro=${encodeURIComponent(busquedaResponsable)}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/persona?filtro=${encodeURIComponent(busquedaResponsable)}`,
         { signal: controller.signal }
       );
       setResponsables(Array.isArray(response.data) ? response.data : []);
@@ -277,10 +277,10 @@ const fetchCultivos = async () => {
     setCargando(true);
 
     // 1️⃣ Traer cultivos
-    const cultivosRes = await axios.get("http://localhost:4000/api/cultivos");
+    const cultivosRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/cultivos`);
 
     // 2️⃣ Traer responsables
-    const responsablesRes = await axios.get("http://localhost:4000/api/persona");
+    const responsablesRes = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/persona`);
     const listaResponsables: Responsable[] = Array.isArray(responsablesRes.data) ? responsablesRes.data : [];
 
     // 3️⃣ Mapear encargado
@@ -379,7 +379,7 @@ const agregarCultivo = async () => {
     if (imagenFile) {
       const formData = new FormData();
       formData.append("imagen", imagenFile);
-      const res = await axios.post("http://localhost:4000/api/imagen/imagen-cultivo", formData);
+      const res = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/imagen/imagen-cultivo`, formData);
       urlImagen = res.data.url;
     }
 
@@ -405,7 +405,7 @@ const agregarCultivo = async () => {
 
     if (editandoId) {
       // 📝 Editar
-      await axios.put(`http://localhost:4000/api/cultivos/${editandoId}`, payload);
+      await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/cultivos/${editandoId}`, payload);
       const cultAnt = cultivos.find(c => c.id_cultivo === editandoId);
       nuevoCultivo = {
         ...cultAnt,
@@ -417,7 +417,7 @@ const agregarCultivo = async () => {
       );
     } else {
       // ➕ Crear
-      const resPost = await axios.post("http://localhost:4000/api/cultivos", payload);
+      const resPost = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/cultivos`, payload);
 
       nuevoCultivo = {
         ...resPost.data,
@@ -471,7 +471,7 @@ const eliminarCultivo = (id: number) => {
     confirmText: "Eliminar",
     onConfirm: async () => {
       try {
-        await axios.delete(`http://localhost:4000/api/cultivos/${id}`);
+        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/cultivos/${id}`);
         setCultivos(prev => prev.filter(c => c.id_cultivo !== id));
         setModalMessage({ show: true, title: "Eliminado", message: "El cultivo ha sido eliminado.", success: true });
       } catch {
@@ -487,7 +487,7 @@ const eliminarCultivo = (id: number) => {
   const cambiarEstado = (id: number, nuevo: string) => {
     const onConfirm = async () => {
         try {
-            await axios.patch(`http://localhost:4000/api/cultivos/${id}/estado/${nuevo}`);
+            await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/cultivos/${id}/estado/${nuevo}`);
             setCultivos(prev => prev.map(c => c.id_cultivo === id ? { ...c, estado: nuevo as any } : c));
             setModalMessage({ show: true, title: "Estado Actualizado", message: `El estado del cultivo ha sido cambiado a "${nuevo}".`, success: true });
         } catch {

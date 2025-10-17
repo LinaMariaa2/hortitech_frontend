@@ -153,13 +153,13 @@ const App = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const invernaderosRes = await fetch(`${BACKEND_URL}/api/invernadero/datos-activos`);
+        const invernaderosRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invernadero/datos-activos`);
         if (invernaderosRes.ok) {
           const invernaderos = await invernaderosRes.json();
           setInvernaderosActivosCount(invernaderos.length);
         }
 
-        const zonasRes = await fetch(`${BACKEND_URL}/api/zona/datos-activos`);
+        const zonasRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zona/datos-activos`);
         if (zonasRes.ok) {
           const zonas = await zonasRes.json();
           setZonasActivasCount(zonas.length);
@@ -171,7 +171,7 @@ const App = () => {
 
     const fetchEstadisticasZonas = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/zona/estadisticas`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zona/estadisticas`);
         if (res.ok) {
           const stats: EstadisticasZonas = await res.json();
 
@@ -191,7 +191,7 @@ const App = () => {
     // 🟢 SOLO HISTORIAL DE RIEGO 🟢
     const fetchHistorialRiego = async () => {
       try {
-        const riegoRes = await fetch(`${BACKEND_URL}/api/historialRiego/`);
+        const riegoRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/historialRiego/`);
         const riegoData: HistorialRiego[] = riegoRes.ok ? await riegoRes.json() : [];
         setHistorialRiego(riegoData);
       } catch (error) {
@@ -241,7 +241,7 @@ const App = () => {
     setModalDataType('invernaderos');
     setShowModal(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/invernadero/datos-activos`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/invernadero/datos-activos`);
       if (!res.ok) {
         throw new Error("Error al obtener los invernaderos activos");
       }
@@ -261,7 +261,7 @@ const App = () => {
     setModalDataType('zonas');
     setShowModal(true);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/zona/datos-activos`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/zona/datos-activos`);
       if (!res.ok) {
         throw new Error("Error al obtener las zonas activas");
       }

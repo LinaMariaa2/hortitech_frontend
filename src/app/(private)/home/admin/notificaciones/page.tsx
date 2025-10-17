@@ -214,7 +214,7 @@ export default function NotificacionesPage() {
   const fetchNotificaciones = async () => {
     try {
       // 🛑 CORRECCIÓN 1/3: REST API FETCH
-      const res = await fetch(`${BACKEND_URL}/api/notificaciones/admin`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/admin`);
       if (!res.ok) throw new Error("Error cargando notificaciones");
       const data: NotificacionBase[] = await res.json();
       setNotificaciones(ordenarNotificaciones(data));
@@ -274,7 +274,7 @@ export default function NotificacionesPage() {
   const marcarComoLeida = async (id: number | string) => {
     try {
       // 🛑 CORRECCIÓN 3A/3: PATCH REQUEST
-      await fetch(`${BACKEND_URL}/api/notificaciones/${id}/leida`, { method: "PATCH" });
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/${id}/leida`, { method: "PATCH" });
       setNotificaciones((prev) =>
         prev.map((n) => (n.id === id ? { ...n, leida: true } : n))
       );
@@ -286,7 +286,7 @@ export default function NotificacionesPage() {
   const marcarTodasComoLeidas = async () => {
     try {
       // 🛑 CORRECCIÓN 3B/3: PUT REQUEST
-      await fetch(`${BACKEND_URL}/api/notificaciones/marcar-todas-leidas`, {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/marcar-todas-leidas`, {
         method: "PUT",
       });
       setNotificaciones((prev) => prev.map((n) => ({ ...n, leida: true })));

@@ -138,9 +138,9 @@ export default function BitacoraPage() {
       setCargando(true);
       try {
         const [bitacoraRes, personaRes, invernaderoRes] = await Promise.all([
-          axios.get("http://localhost:4000/api/bitacora?archivadas=false"),
-          axios.get("http://localhost:4000/api/persona"),
-          axios.get("http://localhost:4000/api/invernadero")
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora?archivadas=false`),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/persona`),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/invernadero`)
         ]);
         setPublicaciones(bitacoraRes.data);
         setAutores(personaRes.data);
@@ -157,7 +157,7 @@ export default function BitacoraPage() {
 
   useEffect(() => {
     if (form.id_invernadero) {
-      axios.get(`http://localhost:4000/api/zona/invernadero/${form.id_invernadero}`)
+      axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/zona/invernadero/${form.id_invernadero}`)
         .then((res) => setZonasDisponibles(res.data))
         .catch(error => {
             console.error("Error al cargar las zonas:", error);
@@ -194,7 +194,7 @@ export default function BitacoraPage() {
   const guardarPublicacion = async () => {
     setIsSaving(true);
     try {
-      const url = `http://localhost:4000/api/bitacora${editando ? `/${form.id_publicacion}` : ""}`;
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/api/bitacora${editando ? `/${form.id_publicacion}` : ""}`;
       const method = editando ? axios.put : axios.post;
       if (!form.titulo || !form.contenido || !form.tipo_evento || !form.id_invernadero || !form.id_zona || !form.autor_id) {
         setModalMensaje("Por favor completa todos los campos obligatorios.");
@@ -202,7 +202,7 @@ export default function BitacoraPage() {
         return;
       }
       await method(url, { ...form, id_invernadero: Number(form.id_invernadero), id_zona: Number(form.id_zona), autor_id: Number(form.autor_id) });
-      const res = await axios.get("http://localhost:4000/api/bitacora?archivadas=false");
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora?archivadas=false`);
       setPublicaciones(res.data);
       setModalOpen(false);
       setEditando(false);
@@ -222,8 +222,8 @@ export default function BitacoraPage() {
     }
     setAccionConfirmar(() => async () => {
       try {
-        await axios.delete(`http://localhost:4000/api/bitacora/${id}`);
-        const res = await axios.get("http://localhost:4000/api/bitacora?archivadas=false");
+        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora?archivadas=false/api/bitacora/${id}`);
+        const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora?archivadas=false/api/bitacora?archivadas=false`);
         setPublicaciones(res.data);
         setModalMensaje("Publicación eliminada correctamente.");
       } catch (error) {
@@ -242,7 +242,7 @@ export default function BitacoraPage() {
   const archivarPublicacion = async (id: number | null) => {
     if (!id) return;
     try {
-      await axios.patch(`http://localhost:4000/api/bitacora/${id}/archivar`);
+      await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/api/bitacora/${id}/archivar`);
       setPublicaciones((prev) => prev.filter((p) => p.id_publicacion !== id));
       setModalMensaje("Publicación archivada.");
     } catch (err) {
