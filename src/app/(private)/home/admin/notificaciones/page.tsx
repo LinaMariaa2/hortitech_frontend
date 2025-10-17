@@ -6,7 +6,7 @@ import { io, Socket } from "socket.io-client";
 
 // ⭐ DEFINICIÓN DE URL CORREGIDA ⭐
 // Usamos la URL desplegada para garantizar la conexión, anulando localhost.
-const BACKEND_URL = 'https://backendhortitech.onrender.com';
+const BACKEND_URL = 'https://hortitech-backend.onrender.com';
 
 // --- Interfaces ---
 interface NotificacionBase {
