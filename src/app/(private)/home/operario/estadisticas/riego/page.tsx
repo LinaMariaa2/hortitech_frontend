@@ -81,7 +81,7 @@ export default function EstadisticasPage() {
 
   useEffect(() => {
     // Usamos localhost:4000 como en tu ejemplo (si necesitas usar env, lo cambiamos luego)
-    const socket = io("https://backendhortitech.onrender.com", {
+    const socket = io(`${process.env.NEXT_PUBLIC_API_URL}`, {
       transports: ["websocket"],
     });
 

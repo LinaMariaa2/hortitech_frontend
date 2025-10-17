@@ -140,7 +140,7 @@ export default function NotificacionesOperario() {
 
   const fetchNotificaciones = async () => {
     try {
-      const res = await fetch("https://backendhortitech.onrender.com/api/notificaciones/operario");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/operario`);
       if (!res.ok) throw new Error("No se pudo cargar las notificaciones desde la API.");
       const data: NotificacionRecibida[] = await res.json();
       const formattedData = data
@@ -201,7 +201,7 @@ export default function NotificacionesOperario() {
     try {
       setNotificaciones(prev => prev.map(n => n.id === id ? { ...n, leida: true } : n));
 
-      const res = await fetch(`https://backendhortitech.onrender.com/api/notificaciones/marcar-leida/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/marcar-leida/${id}`, {
         method: "PUT",
       });
       if (!res.ok) throw new Error("No se pudo marcar la notificación como leída.");
@@ -214,7 +214,7 @@ export default function NotificacionesOperario() {
     try {
       setNotificaciones(prev => prev.map(n => ({ ...n, leida: true })));
 
-      const res = await fetch(`https://backendhortitech.onrender.com/api/notificaciones/marcar-todas-leidas`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/notificaciones/marcar-todas-leidas`, {
         method: "PUT",
       });
       if (!res.ok) throw new Error("No se pudo marcar todas como leídas.");
