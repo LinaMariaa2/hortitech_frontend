@@ -1,178 +1,376 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, Suspense } from "react";
-import { Plus, Pencil, PauseCircle, PlayCircle, Trash, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import api from "@/app/services/api";
+import { Plus, Pencil, PauseCircle, PlayCircle, Trash, X } from "lucide-react";
+import Toast from "@/app/(private)/home/admin/components/Toast";
+import { AxiosError } from "axios";
 
-interface LightSchedule {
-  id: string;
-  start: string;
-  end: string;
-  active: boolean;
+interface ProgramacionIluminacion {
+  id_iluminacion: number;
+  fecha_inicio: string;
+  fecha_finalizacion: string;
+  descripcion: string;
+  estado: boolean;
 }
 
-/** 
- * Componente que usa useSearchParams — debe estar dentro de un Suspense
- */
-const LightingProgramContent = () => {
+export default function ProgramacionIluminacion() {
   const searchParams = useSearchParams();
-  const zoneId = searchParams.get("zoneId");
+  const zonaId = searchParams.get("id");
 
-  const [schedules, setSchedules] = useState<LightSchedule[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [estadosDetenidos, setEstadosDetenidos] = useState<{ [id: number]: boolean }>({});
+  const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [programaciones, setProgramaciones] = useState<ProgramacionIluminacion[]>([]);
+  const [form, setForm] = useState({ activacion: "", desactivacion: "", descripcion: "" });
+  const [modalOpen, setModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const convertirFechaParaInput = (fechaISO: string) => {
+    const fecha = new Date(fechaISO);
+    const tzOffset = fecha.getTimezoneOffset() * 60000;
+    const fechaLocal = new Date(fecha.getTime() - tzOffset);
+    return fechaLocal.toISOString().slice(0, 16);
+  };
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+  };
 
   useEffect(() => {
-    if (!zoneId) {
-      setError("ID de zona no encontrado.");
-      setIsLoading(false);
+    if (!zonaId) return;
+    api
+      .get(`/programacionIluminacion/zona/${zonaId}/futuras`)
+      .then((res) => {
+        setProgramaciones(res.data);
+        const nuevosEstados: Record<number, boolean> = {};
+        (res.data as ProgramacionIluminacion[]).forEach((p) => {
+          nuevosEstados[p.id_iluminacion] = !p.estado;
+        });
+        setEstadosDetenidos(nuevosEstados);
+      })
+      .catch((err) => {
+        console.error("Error al cargar programaciones:", err);
+        showToast("❌ Error al cargar programaciones");
+      });
+  }, [zonaId]);
+
+  const validarProgramacion = (): boolean => {
+    const inicio = new Date(form.activacion);
+    const fin = new Date(form.desactivacion);
+    const ahora = new Date();
+
+    if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+      showToast("⚠️ Debes ingresar fechas válidas.");
+      return false;
+    }
+
+    if (inicio < ahora) {
+      showToast("⚠️ La fecha de inicio no puede estar en el pasado.");
+      return false;
+    }
+
+    if (fin <= inicio) {
+      showToast("⚠️ La fecha de finalización debe ser mayor a la de inicio.");
+      return false;
+    }
+
+    const solapa = programaciones.some((p) => {
+      if (editandoId && p.id_iluminacion === editandoId) return false;
+      const pInicio = new Date(p.fecha_inicio);
+      const pFin = new Date(p.fecha_finalizacion);
+      return inicio < pFin && fin > pInicio;
+    });
+
+    if (solapa) {
+      showToast("⚠️ La programación se solapa con otra existente.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const agregar = async () => {
+    if (!form.activacion || !form.desactivacion || !form.descripcion) {
+      showToast("⚠️ Por favor, completa todos los campos.");
       return;
     }
 
-    const loadData = async () => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setSchedules([
-        { id: "1", start: "06:00", end: "10:00", active: true },
-        { id: "2", start: "18:00", end: "22:00", active: false },
-      ]);
-      setIsLoading(false);
-      setError(null);
-    };
+    if (!validarProgramacion()) return;
 
-    loadData();
-  }, [zoneId]);
-
-  const handleAddSchedule = useCallback(() => {
-    const newSchedule: LightSchedule = {
-      id: Date.now().toString(),
-      start: "09:00",
-      end: "17:00",
-      active: true,
-    };
-    setSchedules(prev => [...prev, newSchedule]);
-  }, []);
-
-  const handleSave = async () => {
-    setIsSaving(true);
-    setError(null);
+    setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulación API
-      alert("Programación guardada exitosamente.");
-    } catch (e) {
-      setError("Error al guardar la programación.");
+      const res = await api.post("/programacionIluminacion", {
+        fecha_inicio: form.activacion,
+        fecha_finalizacion: form.desactivacion,
+        descripcion: form.descripcion,
+        id_zona: parseInt(zonaId as string),
+      });
+      setProgramaciones((prev) => [...prev, res.data]);
+      setForm({ activacion: "", desactivacion: "", descripcion: "" });
+      setModalOpen(false);
+      showToast("✅ Programación creada con éxito");
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ mensaje?: string }>;
+      console.error("Error al crear programación:", axiosErr);
+      showToast(axiosErr.response?.data?.mensaje || "❌ Hubo un error al crear la programación.");
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-full min-h-[300px]">
-        <Loader2 className="animate-spin mr-2" size={32} />
-        <p>Cargando programación...</p>
-      </div>
-    );
-  }
+  const detener = async (id: number) => {
+    const nuevoEstado = !estadosDetenidos[id];
+    try {
+      await api.patch(`/programacionIluminacion/${id}/estado`, { activo: nuevoEstado });
+      setEstadosDetenidos((prev) => ({ ...prev, [id]: nuevoEstado }));
+      showToast(nuevoEstado ? "✅ Iluminación detenida" : "✅ Iluminación reanudada");
+    } catch (err: unknown) {
+      console.error("Error al cambiar estado de programación:", err);
+      showToast("❌ No se pudo actualizar el estado en el servidor");
+    }
+  };
 
-  if (error) {
-    return (
-      <div className="p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-        <h2 className="font-bold">Error de Carga</h2>
-        <p>{error}</p>
-      </div>
-    );
-  }
+  const actualizarProgramacion = async () => {
+    if (!form.activacion || !form.desactivacion || !form.descripcion) {
+      showToast("⚠️ Por favor, completa todos los campos.");
+      return;
+    }
+
+    if (!validarProgramacion()) return;
+    if (editandoId === null) return;
+
+    setLoading(true);
+    try {
+      const res = await api.put(`/programacionIluminacion/${editandoId}`, {
+        fecha_inicio: form.activacion,
+        fecha_finalizacion: form.desactivacion,
+        descripcion: form.descripcion,
+      });
+      setProgramaciones((prev) =>
+        prev.map((p) =>
+          p.id_iluminacion === editandoId ? res.data.programacion : p
+        )
+      );
+      setForm({ activacion: "", desactivacion: "", descripcion: "" });
+      setEditandoId(null);
+      setModalOpen(false);
+      showToast(res.data.mensaje || "✅ Programación actualizada");
+    } catch (err: unknown) {
+      const axiosErr = err as AxiosError<{ mensaje?: string }>;
+      const backendMsg = axiosErr.response?.data?.mensaje || "Hubo un error al actualizar la programación.";
+      showToast(backendMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const eliminarProgramacion = async (programacion: ProgramacionIluminacion) => {
+    try {
+      await api.delete(`/programacionIluminacion/${programacion.id_iluminacion}`);
+      setProgramaciones((prev) =>
+        prev.filter((p) => p.id_iluminacion !== programacion.id_iluminacion)
+      );
+      showToast("🗑️ Programación eliminada correctamente");
+    } catch (err: unknown) {
+      console.error("Error al eliminar programación:", err);
+      showToast("❌ No se pudo eliminar la programación");
+    }
+  };
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-      <header className="mb-6 border-b pb-4">
-        <h1 className="text-3xl font-extrabold text-gray-900">
-          Programación de Iluminación
-        </h1>
-        <p className="text-gray-500">
-          Configuración para la Zona: {zoneId || "Desconocida"}
-        </p>
-      </header>
+    <main className="w-full bg-slate-50 min-h-screen p-6 sm:p-8">
+      {/* Header */}
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-4xl font-extrabold text-slate-800 tracking-tight">
+            Programación de Iluminación - Zona {zonaId}
+          </h1>
+        </div>
+        <button
+          onClick={() => {
+            setEditandoId(null);
+            setForm({ activacion: "", desactivacion: "", descripcion: "" });
+            setModalOpen(true);
+          }}
+          className="bg-teal-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Crear Programación</span>
+        </button>
+      </div>
 
-      <main className="max-w-4xl mx-auto">
-        {schedules.map((schedule, index) => (
-          <div
-            key={schedule.id}
-            className="flex items-center justify-between p-4 mb-3 bg-white shadow-md rounded-xl border border-gray-200 transition duration-150 ease-in-out hover:shadow-lg"
-          >
-            <div className="flex items-center space-x-4">
-              {schedule.active ? (
-                <PlayCircle className="text-green-500" size={24} />
-              ) : (
-                <PauseCircle className="text-yellow-500" size={24} />
-              )}
-              <div>
-                <p className="font-semibold text-lg">Horario {index + 1}</p>
-                <p className="text-sm text-gray-600">
-                  De {schedule.start} a {schedule.end}
+      {/* Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {programaciones.map((p) => {
+          const ahora = new Date();
+          const inicio = new Date(p.fecha_inicio);
+          const haIniciado = inicio <= ahora;
+          const estaDetenida = estadosDetenidos[p.id_iluminacion];
+          const puedeEditarEliminar = !haIniciado || estaDetenida;
+
+          return (
+            <div
+              key={p.id_iluminacion}
+              className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col"
+            >
+              <div className="space-y-2">
+                <p className="text-sm text-slate-500">
+                  <span className="font-semibold text-slate-700">Activación:</span>{" "}
+                  {new Date(p.fecha_inicio).toLocaleString("es-CO")}
                 </p>
+                <p className="text-sm text-slate-500">
+                  <span className="font-semibold text-slate-700">Desactivación:</span>{" "}
+                  {new Date(p.fecha_finalizacion).toLocaleString("es-CO")}
+                </p>
+                <p className="text-sm text-slate-500">
+                  <span className="font-semibold text-slate-700">Descripción:</span>{" "}
+                  {p.descripcion}
+                </p>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-slate-200 flex gap-2 flex-wrap">
+                {haIniciado && (
+                  <button
+                    onClick={() => detener(p.id_iluminacion)}
+                    className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold text-white transition-colors ${
+                      estaDetenida
+                        ? "bg-green-600 hover:bg-green-700"
+                        : "bg-yellow-500 hover:bg-yellow-600"
+                    }`}
+                  >
+                    {estaDetenida ? (
+                      <>
+                        <PlayCircle className="w-4 h-4" /> Reanudar
+                      </>
+                    ) : (
+                      <>
+                        <PauseCircle className="w-4 h-4" /> Detener
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {/* Editar */}
+                <button
+                  onClick={() => {
+                    setEditandoId(p.id_iluminacion);
+                    setForm({
+                      activacion: convertirFechaParaInput(p.fecha_inicio),
+                      desactivacion: convertirFechaParaInput(p.fecha_finalizacion),
+                      descripcion: p.descripcion,
+                    });
+                    setModalOpen(true);
+                  }}
+                  disabled={!puedeEditarEliminar}
+                  className={`inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-semibold transition-colors ${
+                    puedeEditarEliminar
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Editar
+                </button>
+
+                {/* Eliminar */}
+                <button
+                  onClick={() => eliminarProgramacion(p)}
+                  disabled={!puedeEditarEliminar}
+                  className={`inline-flex items-center justify-center p-2 rounded-lg transition-colors ${
+                    puedeEditarEliminar
+                      ? "bg-red-600 hover:bg-red-700 text-white"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
+                  title="Eliminar"
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal */}
+      {modalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-slate-200">
+              <h2 className="text-2xl font-bold text-slate-800">
+                {editandoId ? "Editar Programación" : "Agregar Programación"}
+              </h2>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="absolute top-4 right-4 p-2 text-slate-500 hover:bg-slate-100 rounded-full"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 overflow-y-auto">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Fecha y hora de activación
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.activacion}
+                  onChange={(e) => setForm({ ...form, activacion: e.target.value })}
+                  className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Fecha y hora de finalización
+                </label>
+                <input
+                  type="datetime-local"
+                  value={form.desactivacion}
+                  onChange={(e) => setForm({ ...form, desactivacion: e.target.value })}
+                  className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-1">
+                  Descripción
+                </label>
+                <input
+                  type="text"
+                  value={form.descripcion}
+                  onChange={(e) => setForm({ ...form, descripcion: e.target.value })}
+                  className="w-full border border-slate-300 p-3 rounded-lg focus:ring-2 focus:ring-green-500"
+                />
               </div>
             </div>
 
-            <div className="flex space-x-2">
+            <div className="p-6 border-t border-slate-200 flex justify-end gap-3">
               <button
-                title="Editar"
-                className="p-2 text-blue-600 hover:text-blue-800 rounded-full hover:bg-blue-50 transition"
+                onClick={() => setModalOpen(false)}
+                className="px-6 py-2 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100"
               >
-                <Pencil size={20} />
+                Cancelar
               </button>
               <button
-                title="Eliminar"
-                className="p-2 text-red-600 hover:text-red-800 rounded-full hover:bg-red-50 transition"
-                onClick={() => alert("Función de eliminación no implementada")}
+                onClick={editandoId ? actualizarProgramacion : agregar}
+                disabled={loading}
+                className={`px-6 py-2 rounded-lg text-white font-semibold ${
+                  editandoId
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-green-500 hover:bg-green-700"
+                } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
-                <Trash size={20} />
+                {loading ? "Procesando..." : editandoId ? "Guardar Cambios" : "Crear"}
               </button>
             </div>
           </div>
-        ))}
-
-        <button
-          onClick={handleAddSchedule}
-          className="mt-4 flex items-center justify-center w-full py-3 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition duration-200 hover:shadow-xl font-medium"
-        >
-          <Plus className="mr-2" size={20} />
-          Agregar Nueva Programación
-        </button>
-
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className={`w-full py-3 text-white rounded-xl font-bold transition duration-200 ${
-              isSaving
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700 shadow-lg"
-            }`}
-          >
-            {isSaving ? (
-              <span className="flex items-center justify-center">
-                <Loader2 className="animate-spin mr-2" size={20} />
-                Guardando...
-              </span>
-            ) : (
-              "Guardar Cambios"
-            )}
-          </button>
         </div>
-      </main>
-    </div>
-  );
-};
+      )}
 
-/**
- * Página principal: contiene el Suspense obligatorio para Render/Next.js
- */
-export default function LightingProgramPage() {
-  return (
-    <Suspense fallback={<div className="p-8 text-center">Cargando...</div>}>
-      <LightingProgramContent />
-    </Suspense>
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
+    </main>
   );
 }
